@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useHistory} from "react-router-dom";
-
+import {db} from "./firebase";
+import {addDoc, collection} from "firebase/firestore";
 
 const  Create= () => {
     const [ title, setTitle ] = useState("hello"); //initial value is empty string
@@ -10,27 +11,38 @@ const  Create= () => {
     const history = useHistory(); //gives us access to the browser history
 
     //default behaviour of form is to refresh the page
+    const createPost = async () => {
+        const blogCollection = collection(db, "blog");
+        await addDoc(blogCollection,{title,body,author});
+    }
+    
     const handleSubmit = (e) => {
 
         e.preventDefault(); //prevents page from refreshing
         //creating the new blog object
-        const blog = {title, body, author};
+        //const blog = {title, body, author};
         setIsPending(true);
-        
-        
+
+        createPost().then(() => {
+            console.log('new blog added');
+            setIsPending(false);
+            history.push('/'); //redirects to home page
+        })
         
 
-    fetch('http://localhost:8000/blogs', {
-        method: 'POST',
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(blog)
-    }).then(() =>{
-        console.log("new blog added");
-        setIsPending(false);
-        //history.go();
-        history.push('/');    //redirects to home page //include the route in paranthesis
+        
+
+    // fetch('http://localhost:8000/blogs', {
+    //     method: 'POST',
+    //     headers: {"Content-Type": "application/json"},
+    //     body: JSON.stringify(blog)
+    // }).then(() =>{
+    //     console.log("new blog added");
+    //     setIsPending(false);
+    //     //history.go();
+    //     history.push('/');    //redirects to home page //include the route in paranthesis
        
-    } )
+    // } )
 
     
     }
@@ -69,9 +81,7 @@ const  Create= () => {
                   
                 { !isPending &&<button>Add blog</button> }
                 { isPending &&<button disabled>Adding blog...</button>}
-                <p>{title}</p>
-                <p>{body}</p>
-                <p>{author}</p>
+               
             </form>
             </div>
            
